@@ -1,6 +1,7 @@
 const version = "1.0.0"
 const keychainService = 'dev.annino.gittree'
-const { TreeBuilder, Branch, PullRequest } = require('./model')
+
+const { TreeBuilder, Branch, PullRequest, TreeNode, Tree } = require('./model')
 const retriveConfiguration = require('./config').retriveConfiguration
 
 const Git = require("nodegit")
@@ -56,7 +57,28 @@ async function app(config) {
             // Parse the gotten data as JSON
             const parsedData = JSON.parse(rawData)
             // Extract the info
-            getPullRequestData(parsedData)
+            const PRs = getPullRequestData(parsedData)
+
+            const treeBuilder = new TreeBuilder(PRs, "develop")
+            const tree = treeBuilder.generate()
+
+            if (config.all) {
+                console.log(tree.toString())
+            } else {
+                var y = tree.depthFirstSearch(currentBranchName)
+                var x = new TreeNode(y.data)
+
+                while (y.parent != null) {
+                    const n = new TreeNode(y.parent.data)
+                    x.parent = n
+                    n.children = [x]
+                    y = y.parent
+                    x = x.parent
+                }
+                const reducedTree = new Tree(x)
+                console.log(reducedTree.toString())
+            }
+
           } catch (e) {
             console.error(e.message)
           }
@@ -64,7 +86,7 @@ async function app(config) {
     })
 
     function getPullRequestData(data) {
-        const PRs = data.map( (_, jsonIndex) => {
+        return data.map( (_, jsonIndex) => {
             // Get the base branch
             const base = data[jsonIndex].base
             const baseBranch = new Branch(base.ref, base.sha)
@@ -75,10 +97,6 @@ async function app(config) {
 
             return new PullRequest(headBranch, baseBranch)
         })
-       
-        const treeBuilder = new TreeBuilder(PRs, "develop")
-        const tree = treeBuilder.generate()
-        console.log(tree.toString())
     }
 }
 
