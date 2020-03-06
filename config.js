@@ -39,8 +39,8 @@ async function userToken(passedToken, keychainService) {
                 terminal: true
                 });
                 return await new Promise((resolve, error) => {
-                    rl.question('Token: ', function(token) {
-                        console.log('\nToken is ' + token);
+                    rl.question('Insert token: ', function(token) {
+                        console.log(`\nSaved token is token ${token}. Add --token TOKEN to rewrite it.`);
                         keytar.setPassword(keychainService, username, token)
                         rl.close();
                         resolve(token)
@@ -50,14 +50,14 @@ async function userToken(passedToken, keychainService) {
 
         } else {
             // There was already a token saved
-            console.log(`Fetched from keychain ${token}`)
+            console.log(`Fetched token from the keychain: ${token}`)
             return await new Promise((resolve, error) => {
                 resolve(token) 
             })
         }
     } else {
         // Set the token being passed as argument as new token
-        console.log(passedToken)
+        console.log(`A new token is being saved: ${passedToken}`)
         await keytar.setPassword(keychainService, username, passedToken)
         return await new Promise((resolve, error) => {
             resolve(passedToken) 
