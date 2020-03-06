@@ -20,6 +20,7 @@ class TreeNode {
     constructor(data) {
         this.data = data
         this.children = []
+        this.parent = null
     }
 
     toString() {
@@ -34,18 +35,18 @@ class Tree {
 
     toString() {
         const rootNodeString = this.rootNode.toString()
-        const childrenString = this.nodeString(this.rootNode, 0)
+        const childrenString = this.nodeString(this.rootNode, 0, true)
         return "Tree:\n\n" + rootNodeString + childrenString
     }
 
-    nodeString(node, currentHeight) {
+    nodeString(node, currentHeight, isRootNodeCaller) {
         // Generate the Tree output
         let childrenString = ""
         const lastIndex = node.children.length - 1
 
         node.children.forEach((child, index) => {
             childrenString += "\n"
-            if (currentHeight > 0) {
+            if (currentHeight > 0 && !isRootNodeCaller) {
                 childrenString += "│"
             }
             childrenString += "\t".repeat(currentHeight)
@@ -53,20 +54,35 @@ class Tree {
             if (index < lastIndex) {
                 childrenString += "├────"
                 childrenString += child.toString()
-                childrenString += this.nodeString(child, currentHeight + 1)
+                childrenString += this.nodeString(child, currentHeight + 1, false)
             } else {
                 childrenString += "└────"
                 childrenString += child.toString()
-                childrenString += this.nodeString(child, currentHeight + 1)
-                if (currentHeight == 0) {
+                childrenString += this.nodeString(child, currentHeight + 1, isRootNodeCaller)
+                if (currentHeight == 0 || isRootNodeCaller) {
                     childrenString += "\n"
                 } else {
                     childrenString += "\n│"
                 }
-                
             }
         })
         return childrenString
+    }
+
+    depthFirstSearch(data) {
+        return this.dfs(data, this.rootNode)
+    }
+
+    dfs(data, rootNode) {
+        for (const currentChildNode of rootNode.children) {
+            if (currentChildNode.data == data) {
+                return currentChildNode
+            } else if (currentChildNode.children.length != 0) {
+                return this.dfs(data, currentChildNode)
+            } else {
+                continue
+            }
+        }
     }
 }
 
@@ -101,6 +117,7 @@ class TreeBuilder {
                 node.children.forEach ( (subnode) => {
                     // Append the child to the list of the children
                     topNode.children.push(subnode)
+                    subnode.parent = topNode
 
                     // Remove the following PR from the list of all the PRs
                     const notReversedIndex = pendingPRNodes.length - index - 1
@@ -119,5 +136,7 @@ class TreeBuilder {
 module.exports = {
     TreeBuilder,
     Branch,
-    PullRequest
+    PullRequest,
+    TreeNode,
+    Tree
 }
