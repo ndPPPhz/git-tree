@@ -78,7 +78,10 @@ class Tree {
             if (currentChildNode.data == data) {
                 return currentChildNode
             } else if (currentChildNode.children.length != 0) {
-                return this.dfs(data, currentChildNode)
+                const result = this.dfs(data, currentChildNode)
+                if (result != null) {
+                    return result
+                }
             } else {
                 continue
             }
