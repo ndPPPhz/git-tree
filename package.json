@@ -1,0 +1,20 @@
+{
+  "name": "git-tree",
+  "version": "1.0.0",
+  "description": "",
+  "main": "git-tree.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com-personal:ndPPPhz/git-tree.git"
+  },
+  "author": "Annino De Petra",
+  "license": "ISC",
+  "dependencies": {
+    "keytar": "^5.4.0",
+    "nodegit": "^0.26.5",
+    "yargs": "^15.1.0"
+  }
+}

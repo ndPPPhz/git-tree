@@ -1,6 +1,11 @@
 const version = "1.0.0"
+const keychainService = 'dev.annino.gittree'
+
+const retriveConfiguration = require('./config').retriveConfiguration
+
 const Git = require("nodegit")
 const https = require("https")
+const argv = require('yargs').argv
 
 class Branch {
     constructor(name, sha) {
@@ -120,10 +125,10 @@ class TreeBuilder {
     }
 }
 
-async function app() {
+async function app(config) {
     // Open the git directory. This will be useful for the next version when
     // the script will be able to pull the main branch into the dependent branches automatically
-    const repo = await Git.Repository.open(repositoryPath)
+    const repo = await Git.Repository.open(config.path)
     const currentBranch = await repo.getCurrentBranch()
 
     // currentBranch.name() returns refs/head/BRANCH_NAME
@@ -136,7 +141,7 @@ async function app() {
     const options = {
         path: `/repos/${repositoryName}/pulls`,
         headers: {
-            Authorization: `token ${token}`,
+            Authorization: `token ${config.token}`,
             'User-Agent': `gittree/${version}`,
       }
     }
@@ -195,13 +200,7 @@ async function app() {
     }
 }
 
-if (process.argv.length < 3) {
-    console.log("Missing parameters")
-    process.exit(-1)
-}
-
-const token = process.argv[2]
-const repositoryPath = process.argv[3] || process.cwd()
-
-// Run
-app()
+retriveConfiguration(argv, keychainService).then((config, errpr) => {
+    // Run
+    app(config)
+})

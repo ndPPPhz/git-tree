@@ -3,13 +3,15 @@ const keytar = require('keytar')
 var readline = require('readline');
 var Writable = require('stream').Writable;
 
-async function retriveConfiguration({args, keychainService }) {
-    return new Promise( async (resolve, reject) => {
-        const passedToken = args['token']
-        const token = await userToken(passedToken, keychainService)
-        
-        resolve(token)
-    })
+module.exports = {
+    async retriveConfiguration(argv, keychainService) {
+        const token = await userToken(argv.token, keychainService)
+        return {
+            all: !!argv.all,
+            path: argv.path || process.cwd(),
+            token:  token
+        }
+    }
 }
 
 async function userToken(passedToken, keychainService) {
@@ -36,10 +38,9 @@ async function userToken(passedToken, keychainService) {
                 output: mutableStdout,
                 terminal: true
                 });
-                
                 return await new Promise((resolve, error) => {
                     rl.question('Token: ', function(token) {
-                        console.log('\nToken is ' + password);
+                        console.log('\nToken is ' + token);
                         keytar.setPassword(keychainService, username, token)
                         rl.close();
                         resolve(token)
@@ -50,19 +51,16 @@ async function userToken(passedToken, keychainService) {
         } else {
             // There was already a token saved
             console.log(`Fetched from keychain ${token}`)
-            return new Promise((resolve, error) => {
+            return await new Promise((resolve, error) => {
                 resolve(token) 
             })
         }
     } else {
         // Set the token being passed as argument as new token
+        console.log(passedToken)
         await keytar.setPassword(keychainService, username, passedToken)
-        return new Promise((resolve, error) => {
+        return await new Promise((resolve, error) => {
             resolve(passedToken) 
         })
     }
 }
-
-const config = retriveConfiguration({args: {token: null}, keychainService: 'dev.annino.gitree'}).then((value, error) => {
-    console.log(value)
-})
