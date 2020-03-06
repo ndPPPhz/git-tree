@@ -52,7 +52,7 @@ async function app(config) {
 
         let rawData = ''
         res.on('data', (chunk) => { rawData += chunk })
-        res.on('end', () => {
+        res.on('end', async () => {
           try {
             // Parse the gotten data as JSON
             const parsedData = JSON.parse(rawData)
@@ -77,8 +77,38 @@ async function app(config) {
                 }
                 const reducedTree = new Tree(x)
                 console.log(reducedTree.toString())
-            }
 
+                repo.fetch("origin", {
+                    callbacks: {
+                      credentials: function(url, userName) {
+                        return nodegit.Cred.sshKeyFromAgent(userName);
+                      }
+                    }
+                })
+
+                // Pull the last state
+                const pull = await repo.mergeBranches(reducedTree.rootNode.data, `origin/${reducedTree.rootNode.data}`)
+                console.log(`Pulling ${reducedTree.rootNode.data}`)
+                let next = reducedTree.rootNode.children[0]
+
+                while(next != null) {
+                    await repo.mergeBranches(next.data, `origin/${next.data}`)
+                    console.log(`Pulling ${next.data}`)
+                    next = next.children[0]
+                }
+                
+                console.log("Now Updating all the dependent branches")
+                let head = reducedTree.rootNode
+                let nextHead = head.children[0]
+
+                while(nextHead != null) {
+                    console.log(`Merging ${head.data} into ${nextHead.data}`)
+                    await repo.mergeBranches(nextHead.data, `origin/${head.data}`)
+                    head = nextHead
+                    nextHead = head.children[0]
+                }
+
+            }
           } catch (e) {
             console.error(e.message)
           }
