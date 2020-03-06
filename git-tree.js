@@ -62,7 +62,12 @@ class Tree {
                 childrenString += "└────"
                 childrenString += child.toString()
                 childrenString += this.nodeString(child, currentHeight + 1)
-                childrenString += "\n|"
+                if (currentHeight == 0) {
+                    childrenString += "\n"
+                } else {
+                    childrenString += "\n│"
+                }
+                
             }
         })
         return childrenString
