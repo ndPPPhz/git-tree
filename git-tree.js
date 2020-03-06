@@ -125,6 +125,9 @@ async function app() {
     const currentBranchName = currentBranch.name().split("/")[2]
     console.log(`Your current branch is: ${currentBranchName} \n`)
 
+    const remote = await repo.getRemote("origin")
+    const repositoryName = remote.url().split(":")[1].split(".")[0]
+    
     const options = {
         path: `/repos/${repositoryName}/pulls`,
         headers: {
@@ -187,14 +190,13 @@ async function app() {
     }
 }
 
-if (process.argv.length < 4) {
+if (process.argv.length < 3) {
     console.log("Missing parameters")
     process.exit(-1)
 }
 
 const token = process.argv[2]
-const repositoryName = process.argv[3]
-const repositoryPath = process.argv[4] || process.cwd()
+const repositoryPath = process.argv[3] || process.cwd()
 
 // Run
 app()
