@@ -114,7 +114,7 @@ class TreeBuilder {
 
     findDependentPRs(topNode, pendingPRNodes) {
         // It starts looking for all the PRs whose base is the the default branch
-        pendingPRNodes.reverse().forEach( (node, index, _) => {
+        pendingPRNodes.slice().reverse().forEach( (node, index, _) => {
             if (node.data == topNode.data) {
                 // When it finds a node whose base is the default branch take the children 
                 node.children.forEach ( (subnode) => {
