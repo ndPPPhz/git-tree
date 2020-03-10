@@ -4,7 +4,8 @@
 ## Introduction
 `git-tree` is a node script which prints the tree of all the active PRs and keeps update the depending ones pulling the state from the dependent PR.
 
-![gittree](https://user-images.githubusercontent.com/6486741/76171860-c9107680-6187-11ea-92a4-591920163bbb.gif)
+<img src= "https://user-images.githubusercontent.com/6486741/76360387-cd1dcf00-6314-11ea-8d0e-7e0b362ecc05.gif">
+
 ---
 
 ## Usage
