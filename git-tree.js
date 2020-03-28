@@ -3,6 +3,8 @@ const keychainService = 'dev.annino.gittree'
 
 const { TreeBuilder, Branch, PullRequest, TreeNode, Tree } = require('./model')
 const retriveConfiguration = require('./config').retriveConfiguration
+const process = require('process')
+let readline = require('readline')
 
 const Git = require("nodegit")
 const https = require("https")
@@ -64,10 +66,15 @@ async function app(config) {
 
             if (config.all) {
                 console.log(tree.toString())
+                process.exit()
             } else {
+                if (tree.rootNode.children == null) {
+                    console.log("Your current branch's PR doesn't have any dependent PR")
+                    process.exit()
+                }
+
                 var y = tree.depthFirstSearch(currentBranchName)
                 var x = new TreeNode(y.data)
-
                 while (y.parent != null) {
                     const n = new TreeNode(y.parent.data)
                     x.parent = n
@@ -78,6 +85,30 @@ async function app(config) {
                 const reducedTree = new Tree(x)
                 console.log(reducedTree.toString())
 
+                var rl = readline.createInterface({
+                    input: process.stdin,
+                    output: process.stdout,
+                    terminal: true
+                });
+
+                await new Promise((resolve, error) => {
+                    var waitForUserInput = async function() {
+                        rl.question("Do you want to update the all chain of branches?[y/n] ", async function (answer) {
+                            if (answer == "y") {
+                                rl.close()
+                                resolve()
+                            }
+                            else if (answer == "n") {
+                                process.exit()
+                            }
+                            else {
+                                waitForUserInput()
+                            }
+                        });
+                    }
+                    return waitForUserInput();
+                })
+                
                 repo.fetch("origin", {
                     callbacks: {
                       credentials: function(url, userName) {
@@ -85,7 +116,7 @@ async function app(config) {
                       }
                     }
                 })
-
+        
                 // Pull the last state
                 const pull = await repo.mergeBranches(reducedTree.rootNode.data, `origin/${reducedTree.rootNode.data}`)
                 console.log(`Pulling ${reducedTree.rootNode.data}`)
@@ -100,14 +131,13 @@ async function app(config) {
                 console.log("Now Updating all the dependent branches")
                 let head = reducedTree.rootNode
                 let nextHead = head.children[0]
-
+        
                 while(nextHead != null) {
                     console.log(`Merging ${head.data} into ${nextHead.data}`)
                     await repo.mergeBranches(nextHead.data, `origin/${head.data}`)
                     head = nextHead
                     nextHead = head.children[0]
                 }
-
             }
           } catch (e) {
             console.error(e.message)
