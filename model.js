@@ -1,11 +1,22 @@
+/**
+ * A git Branch object 
+ */
 class Branch {
-    constructor(name, sha) {
+    constructor(name) {
         this.name = name
-        this.sha = sha
     }
 }
 
+/**
+ * A PullRequest object with the base and the head Branches
+ */
 class PullRequest {
+
+    /**
+    * Construct a PullRequest passing the head and base Branches
+    * @param {Branch} head The head branch
+    * @param {Branch} base The base branch
+    */
     constructor(head, base) {
         this.head = head
         this.base = base
@@ -16,7 +27,16 @@ class PullRequest {
     }
 }
 
+/**
+ * A TreeNode representation.
+ *  A node is a simple object which holds a data and may be linked to at most one parent node and may have {0,N} children. 
+ */
 class TreeNode {
+
+    /**
+    * Construct a TreeNode passing the data it will hold.
+    * @param data The data the node will hold. Data MUST not be null
+    */
     constructor(data) {
         this.data = data
         this.children = []
@@ -28,11 +48,26 @@ class TreeNode {
     }
 }
 
+/**
+ *  A Tree is an object which holds a node also called rootNode.
+ */
 class Tree {
+
+    /**
+    *  Initialise a Tree with a node. The root node MUST not have any parent node.
+    *   @param {TreeNode} rootNode The rootNode
+    */
     constructor(rootNode) {
+        if (rootNode.parent != null) {
+            console.error("Trying to initialise a Tree with a rootNode whose parent isn't null")
+            process.exit();
+        }
         this.rootNode = rootNode
     }
 
+    /**
+    *  The visual representation of the Tree in a string format
+    */
     toString() {
         const rootNodeString = this.rootNode.toString()
         const childrenString = this.nodeString(this.rootNode, 0, true)
@@ -69,19 +104,25 @@ class Tree {
         return childrenString
     }
 
+    /**
+    *  Search a node containing the data passed as argument using the depth first search algorythm
+    */
     depthFirstSearch(data) {
         return this.dfs(data, this.rootNode)
     }
 
     dfs(data, rootNode) {
+        // If the current node's data is equal to the required data, return it
         for (const currentChildNode of rootNode.children) {
             if (currentChildNode.data == data) {
                 return currentChildNode
+                // Otherwise search recursively the data scanning its children first 
             } else if (currentChildNode.children.length != 0) {
                 const result = this.dfs(data, currentChildNode)
                 if (result != null) {
                     return result
                 }
+                // If none of the children holds the required data, go to the next node
             } else {
                 continue
             }
@@ -89,7 +130,17 @@ class Tree {
     }
 }
 
+
+/**
+*  An helper class which builds a tree of PRs given a list of PRs and the default branch.
+*  When a PR is dependent by another PR, its parent will be equal to the depending PR.
+*  In the same way, the depending PR will have the dependent PR as one of the children
+*/
 class TreeBuilder {
+
+    /**
+    *  Initialise the TreeBuilder passing a list or PRs and the name of the repo's default branch
+    */
     constructor(prs, defaultBranchName) {
         // Turns the PRs into TreeNodes
         const nodePRs = prs.map((pr) => {
@@ -106,6 +157,10 @@ class TreeBuilder {
         this.rootNode = new TreeNode(defaultBranchName)
     }
 
+    /**
+    *  Build a tree with the given defaultBranchName and PRs
+    * @return {Tree} The built tree
+    */
     generate() {
         // Here's where the script goes thtough all the PRs and it generates the tree
         this.findDependentPRs(this.rootNode, this.nodePRs)

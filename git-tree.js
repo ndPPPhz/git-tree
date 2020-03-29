@@ -169,11 +169,11 @@ async function app(config) {
         return data.map( (_, jsonIndex) => {
             // Get the base branch
             const base = data[jsonIndex].base
-            const baseBranch = new Branch(base.ref, base.sha)
+            const baseBranch = new Branch(base.ref)
 
             // Get the head branch
             const head = data[jsonIndex].head
-            const headBranch = new Branch(head.ref, head.sha)
+            const headBranch = new Branch(head.ref)
 
             return new PullRequest(headBranch, baseBranch)
         })
