@@ -38,6 +38,10 @@ class TreeNode {
     * @param data The data the node will hold. Data MUST not be null
     */
     constructor(data) {
+        if (data == null) {
+            console.error("Trying to initialise a TreeNode with a data null")
+            process.exit()
+        }
         this.data = data
         this.children = []
         this.parent = null
