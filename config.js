@@ -1,7 +1,6 @@
 const keytar = require('keytar')
-
-var readline = require('readline');
-var Writable = require('stream').Writable;
+const readline = require('readline');
+const Writable = require('stream').Writable;
 
 module.exports = {
     async retriveConfiguration(argv, keychainService) {
@@ -23,31 +22,32 @@ async function userToken(passedToken, keychainService) {
 
         // If the token isn't in the system keychain
         if (token == null) {
-            var mutableStdout = new Writable({
-                write: function(chunk, encoding, callback) {
-                    if (!this.muted)
-                    process.stdout.write(chunk, encoding);
-                    callback();
+            // Ask the user to insert a token
+            var mutableStdout = new Writable({ write: function(chunk, encoding, callback) {
+                if (!this.muted)
+                    process.stdout.write(chunk, encoding)
+                    callback()
                 }
-                });
-                
-                mutableStdout.muted = false;
-                
-                var rl = readline.createInterface({
+            });
+            
+            mutableStdout.muted = false
+            
+            var readLine = readline.createInterface({
                 input: process.stdin,
                 output: mutableStdout,
                 terminal: true
-                });
-                return await new Promise((resolve, error) => {
-                    rl.question('Insert token: ', function(token) {
-                        console.log(`\nSaved token is token ${token}. Add --token TOKEN to rewrite it.`);
-                        keytar.setPassword(keychainService, username, token)
-                        rl.close();
-                        resolve(token)
-                    });
-                    mutableStdout.muted = true;
-                })
+            })
 
+            return await new Promise((resolve, error) => {
+                readLine.question('Insert token: ', function(token) {
+                    console.log(`\nSaved token is token ${token}. Add --token TOKEN to rewrite it.`);
+                    keytar.setPassword(keychainService, username, token)
+                    readLine.close();
+                    resolve(token)
+                })
+                // Mute the stdoutput to make the token insertion not visible
+                mutableStdout.muted = true
+            })
         } else {
             // There was already a token saved
             console.log('Fetched token from the keychain')
