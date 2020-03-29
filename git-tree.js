@@ -122,9 +122,29 @@ async function app(config) {
                 console.log(`Pulling ${reducedTree.rootNode.data}`)
                 let next = reducedTree.rootNode.children[0]
 
+                const references = await repo.getReferences()
+                references.forEach((ref) => {
+                    console.log(ref.toString())
+                })
+
                 while(next != null) {
-                    await repo.mergeBranches(next.data, `origin/${next.data}`)
-                    console.log(`Pulling ${next.data}`)
+                    console.log(`On ${next.data}`)
+
+                    const findResult = references.find((ref, _, obj) => {
+                        return ref.name().includes(`refs/heads/${next.data}`)
+                    })
+
+                    if (findResult == null) {
+                        const remoteBranch = `origin/${next.data}`;
+                        let commit = await repo.getBranchCommit(remoteBranch);
+                        await repo.createBranch(next.data, commit, 1)
+
+                        await repo.mergeBranches(next.data, `origin/${next.data}`)
+                        console.log(`Pulling ${next.data}`)
+                    } else {
+                        await repo.mergeBranches(next.data, `origin/${next.data}`)
+                        console.log(`Pulling ${next.data}`)
+                    }
                     next = next.children[0]
                 }
                 
