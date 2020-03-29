@@ -50,14 +50,14 @@ async function userToken(passedToken, keychainService) {
 
         } else {
             // There was already a token saved
-            console.log(`Fetched token from the keychain: ${token}`)
+            console.log('Fetched token from the keychain')
             return await new Promise((resolve, error) => {
                 resolve(token) 
             })
         }
     } else {
         // Set the token being passed as argument as new token
-        console.log(`A new token is being saved: ${passedToken}`)
+        console.log('The new token is being saved')
         await keytar.setPassword(keychainService, username, passedToken)
         return await new Promise((resolve, error) => {
             resolve(passedToken) 
